@@ -9,8 +9,9 @@ from typing_extensions import Any, overload
 from mpl_subplots_shim._grid import Grid1D, Grid2D
 
 
+# subplots()
 @overload
-def subplots(  # pyright: ignore[reportOverlappingOverload]
+def subplots(
     nrows: Literal[1] = ...,
     ncols: Literal[1] = ...,
     *,
@@ -25,10 +26,11 @@ def subplots(  # pyright: ignore[reportOverlappingOverload]
 ) -> tuple[Figure, Axes]: ...
 
 
+# subplots(1, [2-9])
 @overload
 def subplots(
-    nrows: Literal[1] = ...,
-    ncols: Literal[2, 3, 4, 5, 6, 7, 8, 9] = ...,
+    nrows: Literal[1],
+    ncols: Literal[2, 3, 4, 5, 6, 7, 8, 9],
     *,
     sharex: bool | Literal["none", "all", "row", "col"] = ...,
     sharey: bool | Literal["none", "all", "row", "col"] = ...,
@@ -41,9 +43,27 @@ def subplots(
 ) -> tuple[Figure, Grid1D[Axes]]: ...
 
 
+# subplots(ncols=[2-9])
 @overload
 def subplots(
-    nrows: Literal[2, 3, 4, 5, 6, 7, 8, 9] = ...,
+    nrows: Literal[1] = ...,
+    *,
+    ncols: Literal[2, 3, 4, 5, 6, 7, 8, 9],
+    sharex: bool | Literal["none", "all", "row", "col"] = ...,
+    sharey: bool | Literal["none", "all", "row", "col"] = ...,
+    squeeze: Literal[True] = ...,
+    width_ratios: Sequence[float] | None = ...,
+    height_ratios: Sequence[float] | None = ...,
+    subplot_kw: dict[str, Any] | None = ...,
+    gridspec_kw: dict[str, Any] | None = ...,
+    **fig_kw,
+) -> tuple[Figure, Grid1D[Axes]]: ...
+
+
+# subplots([2-9])
+@overload
+def subplots(
+    nrows: Literal[2, 3, 4, 5, 6, 7, 8, 9],
     ncols: Literal[1] = ...,
     *,
     sharex: bool | Literal["none", "all", "row", "col"] = ...,
@@ -57,10 +77,11 @@ def subplots(
 ) -> tuple[Figure, Grid1D[Axes]]: ...
 
 
+# subplots([2-9], [2-9])
 @overload
 def subplots(
-    nrows: Literal[2, 3, 4, 5, 6, 7, 8, 9] = ...,
-    ncols: Literal[2, 3, 4, 5, 6, 7, 8, 9] = ...,
+    nrows: Literal[2, 3, 4, 5, 6, 7, 8, 9],
+    ncols: Literal[2, 3, 4, 5, 6, 7, 8, 9],
     *,
     sharex: bool | Literal["none", "all", "row", "col"] = ...,
     sharey: bool | Literal["none", "all", "row", "col"] = ...,
@@ -73,6 +94,7 @@ def subplots(
 ) -> tuple[Figure, Grid2D[Axes]]: ...
 
 
+# subplots(squeeze=False)
 @overload
 def subplots(
     nrows: int = ...,
@@ -89,6 +111,7 @@ def subplots(
 ) -> tuple[Figure, Grid2D[Axes]]: ...
 
 
+# subplots(int, int, squeeze=bool)
 @overload
 def subplots(
     nrows: int = ...,
@@ -129,4 +152,4 @@ def subplots(
         subplot_kw=subplot_kw,
         gridspec_kw=gridspec_kw,
         **fig_kw,
-    )  
+    )

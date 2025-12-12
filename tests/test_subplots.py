@@ -13,6 +13,7 @@ def test_subplots(unknown_int: int):
     assert_type(subplots(1, 1, squeeze=True)[-1], Axes)
     assert_type(subplots(2, 1, squeeze=True)[-1], Grid1D[Axes])
     assert_type(subplots(1, 2, squeeze=True)[-1], Grid1D[Axes])
+    assert_type(subplots(ncols=2, squeeze=True)[-1], Grid1D[Axes])
     assert_type(subplots(2, 2, squeeze=True)[-1], Grid2D[Axes])
 
     assert_type(subplots(unknown_int, 1, squeeze=True)[-1], Any)
