@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request: 
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  run:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: mypy
+            setup: >-
+              uv pip install mypy
+            cmd: |
+              mypy --version
+              mypy .
+          - id: pyright
+            setup: >-
+              uv pip install pyright
+            cmd: |
+              pyright --version
+              pyright .
+          - id: basedpyright
+            setup: >-
+              uv pip install basedpyright
+            cmd: |
+              basedpyright --version
+              basedpyright .
+          - id: pyrefly
+            setup: >-
+              uv pip install pyrefly
+            cmd: |
+              pyrefly --version
+              pyrefly check .
+          - id: ty
+            setup: >-
+              uv pip install ty
+            cmd: |
+              ty --version
+              ty check --output-format github .
+    name: ${{ matrix.id }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244  # v7.1.4
+        with:
+          enable-cache: false
+          python-version: 3.14
+          activate-environment: true
+      - run: uv pip install -e .
+      - run: ${{ matrix.setup }}
+      - run: ${{ matrix.cmd }}

@@ -19,9 +19,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.19.0",
-    "pyrefly>=0.45.2",
-    "pyright>=1.1.407",
-    "pytest>=9.0.2",
-    "ty>=0.0.1a33",
+    "basedpyright",
+    "mypy",
+    "pyrefly",
+    "pyright",
+    "pytest",
+    "ty",
 ]
