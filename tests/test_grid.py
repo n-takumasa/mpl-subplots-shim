@@ -15,7 +15,7 @@ ncols = 3
 def ax() -> Grid2D[Axes]:
     plt.switch_backend("agg")
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    return cast(Grid2D[Axes], ax)
+    return cast(Grid2D[Axes], cast(object, ax))
 
 
 def test_grid2d(ax: Grid2D[Axes]):

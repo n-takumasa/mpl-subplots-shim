@@ -57,7 +57,7 @@ jobs:
               pytest ty
             cmd: |
               ty --version
-              ty check --output-format github .
+              ty check .
     name: ${{ matrix.id }}
     runs-on: ubuntu-latest
     steps:
