@@ -1,28 +1,49 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Collection, Iterator, Reversible, Sequence
 from types import EllipsisType
-from typing import Generic, Literal, TypeAlias, TypeVar
+from typing import ClassVar, Generic, Literal, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 import optype.numpy as onp
-from typing_extensions import (
-    Any,
-    Protocol,
-    Self,
-    SupportsIndex,
-    overload,
-)
-
-_Idx: TypeAlias = int | np.integer
-_Seq: TypeAlias = (
-    onp.Array1D[np.bool] | onp.Array1D[np.integer] | list[bool] | list[int]
-)
-_Rest: TypeAlias = slice | EllipsisType
-_Adv: TypeAlias = tuple[int, ...] | _Seq
+from typing_extensions import Any, Protocol, Self, SupportsIndex, overload
 
 ScalarType = TypeVar("ScalarType")
+
+_T_co = TypeVar("_T_co", covariant=True)
+
+
+class SequenceNotTuple(Reversible[_T_co], Collection[_T_co], Protocol[_T_co]):
+    @overload
+    def __getitem__(self, index: SupportsIndex, /) -> _T_co: ...
+    @overload
+    def __getitem__(self, index: slice, /) -> Self: ...
+    def index(self, value: Any, start: int = 0, stop: int = ..., /) -> int: ...
+    def count(self, value: Any, /) -> int: ...
+
+    __hash__: ClassVar[None]  # type: ignore  # ty: ignore[unused-ignore-comment]
+
+
+# TODO: 2D bool mask
+
+# Advanced indexing is triggered when the selection object, obj,
+_Adv: TypeAlias = (
+    # is a non-tuple sequence object,
+    SequenceNotTuple[SupportsIndex]
+    | SequenceNotTuple[bool]
+    # an ndarray (of data type integer or bool),
+    # | onp.Array1D[np.integer]
+    # | onp.Array1D[np.bool_]
+    | np.ndarray[tuple[int,], np.dtype[np.integer]]
+    | np.ndarray[tuple[int,], np.dtype[np.bool_]]
+    # | np.ndarray[Any, np.dtype[np.integer]]
+    # | np.ndarray[Any, np.dtype[np.bool_]]
+)
+# or a tuple with at least one sequence object or ndarray
+# (of data type integer or bool).
+# There are two types of advanced indexing: integer and Boolean.
+_AdvInTuple: TypeAlias = _Adv | Sequence[SupportsIndex] | Sequence[bool]
 
 
 class FlatIter(Generic[ScalarType], Protocol):
@@ -35,11 +56,17 @@ class FlatIter(Generic[ScalarType], Protocol):
     def __len__(self) -> int: ...
 
     @overload
-    def __getitem__(self, key: _Idx | tuple[_Idx]) -> ScalarType: ...
-    @overload
     def __getitem__(
-        self, key: _Seq | _Rest | tuple[_Seq | _Rest | _Adv]
+        self,
+        key: tuple[()]
+        | _Adv
+        | slice
+        | EllipsisType
+        | tuple[slice | EllipsisType,]
+        | tuple[_AdvInTuple,],
     ) -> Grid1D[ScalarType]: ...
+    @overload
+    def __getitem__(self, key: SupportsIndex | tuple[SupportsIndex,]) -> ScalarType: ...
 
 
 class Grid1D(Generic[ScalarType], Protocol):
@@ -74,10 +101,16 @@ class Grid1D(Generic[ScalarType], Protocol):
 
     @overload
     def __getitem__(
-        self, key: tuple[()] | _Seq | _Rest | tuple[_Seq | _Rest | _Adv]
+        self,
+        key: tuple[()]
+        | _Adv
+        | slice
+        | EllipsisType
+        | tuple[slice | EllipsisType,]
+        | tuple[_AdvInTuple,],
     ) -> Self: ...
     @overload
-    def __getitem__(self, key: _Idx | tuple[_Idx]) -> ScalarType: ...
+    def __getitem__(self, key: SupportsIndex | tuple[SupportsIndex,]) -> ScalarType: ...
 
 
 class Grid2D(Generic[ScalarType], Protocol):
@@ -119,25 +152,51 @@ class Grid2D(Generic[ScalarType], Protocol):
     def __getitem__(
         self,
         key: tuple[()]
-        | _Seq
-        | _Rest
-        | tuple[_Rest | _Adv]
-        | tuple[_Rest, _Rest]
-        | tuple[_Adv, _Rest]
-        | tuple[_Rest, _Adv],
+        | slice
+        | tuple[slice,]
+        | tuple[slice, slice]
+        | EllipsisType
+        | tuple[EllipsisType,]
+        | tuple[EllipsisType, slice]
+        | tuple[slice, EllipsisType]
+        | _Adv
+        | tuple[_AdvInTuple,]
+        | tuple[_AdvInTuple, slice | EllipsisType]
+        | tuple[slice | EllipsisType, _AdvInTuple],
     ) -> Self: ...
 
     @overload
     def __getitem__(
         self,
-        key: _Idx
-        | tuple[_Idx]
-        | tuple[_Idx, _Rest]
-        | tuple[_Rest, _Idx]
-        | tuple[_Adv, _Adv]
-        | onp.Array2D[np.bool]
-        | list[list[bool]],
+        key: SupportsIndex
+        | tuple[SupportsIndex,]
+        | tuple[SupportsIndex, slice | EllipsisType]
+        | tuple[slice | EllipsisType, SupportsIndex]
+        | tuple[_AdvInTuple, _AdvInTuple]
+        | tuple[_AdvInTuple, SupportsIndex]
+        | tuple[SupportsIndex, _AdvInTuple],
     ) -> Grid1D[ScalarType]: ...
 
+    # boolean index
     @overload
-    def __getitem__(self, key: tuple[_Idx, _Idx]) -> ScalarType: ...
+    def __getitem__(
+        self,
+        key: np.ndarray[tuple[int, int], np.dtype[np.bool_]]
+        | Sequence[Sequence[bool]]
+        | tuple[np.ndarray[tuple[int, int], np.dtype[np.bool_]],]
+        | tuple[Sequence[Sequence[bool]],],
+    ) -> Grid1D[ScalarType]: ...
+
+    # boolean index
+    @overload
+    def __getitem__(
+        self,
+        key: np.ndarray[Any, np.dtype[np.bool_]]
+        | tuple[np.ndarray[Any, np.dtype[np.bool_]],],
+    ) -> Self | Grid1D[ScalarType]: ...
+
+    @overload
+    def __getitem__(
+        self,
+        key: tuple[SupportsIndex, SupportsIndex],
+    ) -> ScalarType: ...

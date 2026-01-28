@@ -1,4 +1,3 @@
-
 from typing import cast
 
 import matplotlib.pyplot as plt
@@ -11,11 +10,12 @@ from typing_extensions import assert_type
 nrows = 2
 ncols = 3
 
+
 @pytest.fixture
 def ax() -> Grid2D[Axes]:
     plt.switch_backend("agg")
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    return cast(Grid2D[Axes], ax)
+    return cast(Grid2D[Axes], cast(object, ax))
 
 
 def test_grid2d(ax: Grid2D[Axes]):
@@ -123,19 +123,26 @@ def test_grid2d(ax: Grid2D[Axes]):
     assert_type(_, Grid2D[Axes])
     assert _.shape == (nrows, 1)
 
-    _ = ax[np.ones(nrows, dtype=np.bool)]
+
+def test_numpy(ax: Grid2D[Axes]):
+    _idx = np.ones(nrows, dtype=np.bool_)
+    _ = ax[_idx]
     assert_type(_, Grid2D[Axes])
     assert _.shape == (nrows, ncols)
-    _ = ax[np.array([0], dtype=np.intp)]
+    _idx = np.array([0], dtype=np.intp)
+    _ = ax[_idx]
     assert_type(_, Grid2D[Axes])
     assert _.shape == (1, ncols)
 
-    _ = ax[np.full((nrows, ncols), True, dtype=np.bool)]
+    _idx = np.full((nrows, ncols), True, dtype=np.bool_)
+    _ = ax[_idx]
     assert_type(_, Grid1D[Axes])
     assert _.shape == (nrows * ncols,)
-    _ = ax[[[True] * ncols] * nrows]
+    _idx = [[True] * ncols] * nrows
+    _ = ax[_idx]
     assert_type(_, Grid1D[Axes])
     assert _.shape == (nrows * ncols,)
+
 
 def test_grid1d(ax: Grid2D[Axes]):
     _ = ax[0][0]

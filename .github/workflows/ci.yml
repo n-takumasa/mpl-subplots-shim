@@ -25,34 +25,39 @@ jobs:
         include:
           - id: mypy
             setup: >-
-              uv pip install mypy
+              uv pip install
+              pytest mypy
             cmd: |
               mypy --version
               mypy .
           - id: pyright
             setup: >-
-              uv pip install pyright
+              uv pip install
+              pytest pyright
             cmd: |
               pyright --version
               pyright .
           - id: basedpyright
             setup: >-
-              uv pip install basedpyright
+              uv pip install
+              pytest basedpyright
             cmd: |
               basedpyright --version
               basedpyright .
           - id: pyrefly
             setup: >-
-              uv pip install pyrefly
+              uv pip install
+              pytest pyrefly
             cmd: |
               pyrefly --version
               pyrefly check .
           - id: ty
             setup: >-
-              uv pip install ty
+              uv pip install
+              pytest ty
             cmd: |
               ty --version
-              ty check --output-format github .
+              ty check .
     name: ${{ matrix.id }}
     runs-on: ubuntu-latest
     steps:

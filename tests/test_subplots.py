@@ -8,6 +8,7 @@ from typing_extensions import Any, assert_type
 def unknown_int():
     return 3
 
+
 def test_subplots(unknown_int: int):
     assert_type(subplots(squeeze=True)[-1], Axes)
     assert_type(subplots(1, 1, squeeze=True)[-1], Axes)
